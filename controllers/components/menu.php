@@ -9,29 +9,36 @@
  * @subpackage controllers.components
  */
 class MenuComponent extends Object {
-  protected $_menus = array();
 
-  /**
-   *
-   * If menu not empty, set the var menus in the view
-   * @param Controller $Controller
-   */
-  public function beforeRender(Controller $Controller) {
-    if (!empty($this->_menus))
-      $Controller->set('menus',$this->_menus);
-  }
+	/**
+	 *
+	 * menus before being sent to the view
+	 * @var array
+	 */
+	protected $_menus = array();
 
-  /**
-   *
-   * Add an item to the menu. this item can be a link or just text if no link specified
-   * @param string $menu_name
-   * @param string $name
-   * @param array $link
-   * @param array $options
-   */
-  public function add($menu_name, $name, $link = null, $options = null) {
-    if (!isset($this->_menus[$menu_name]))
-      $this->_menus[$menu_name] = array();
-    $this->_menus[$menu_name][] = array($name, $link, $options);
-  }
+	/**
+	 *
+	 * If menu not empty, set the var menus in the view
+	 * @param Controller $Controller
+	 */
+	public function beforeRender(Controller $Controller) {
+		if (!empty($this->_menus))
+			$Controller->set('menus',$this->_menus);
+	}
+
+	/**
+	 *
+	 * Add an item to the menu. this item can be a link or just text if no link specified
+	 * @param string $menuName
+	 * @param string $name
+	 * @param array $link
+	 * @param array $options
+	 */
+	public function add($menuName, $name, $link = null, $options = null) {
+		if (!isset($this->_menus[$menuName]))
+			$this->_menus[$menuName] = array();
+		$this->_menus[$menuName][] = array($name, $link, $options);
+		return $this;
+	}
 }

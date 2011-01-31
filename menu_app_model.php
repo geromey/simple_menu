@@ -7,5 +7,5 @@
  */
 class SimpleMenuAppModel extends AppModel
 {
-  public $plugin = 'SimpleMenu';
+	public $plugin = 'SimpleMenu';
 }
