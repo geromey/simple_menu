@@ -38,6 +38,8 @@
  *
  * @created May 2009
  * @author Iain Mullan , www.ebotunes.com
+ * @package SimpleMenu
+ * @subpackage SimpleMenu.views.helpers
  *
  */
 class SidebarHelper extends Helper {
