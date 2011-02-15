@@ -13,7 +13,7 @@ class MenuComponent extends Object {
 	/**
 	 *
 	 * menus before being sent to the view
-	 * @var array
+	 * @var key array of SimpleMenu
 	 */
 	protected $_menus = array();
 
@@ -31,14 +31,40 @@ class MenuComponent extends Object {
 	 *
 	 * Add an item to the menu. this item can be a link or just text if no link specified
 	 * @param string $menuName
-	 * @param string $name
-	 * @param array $link
-	 * @param array $options
+	 * @param array $item
 	 */
-	public function add($menuName, $name, $link = null, $options = null) {
+	public function add($menuName, $item) {
 		if (!isset($this->_menus[$menuName]))
-			$this->_menus[$menuName] = array();
-		$this->_menus[$menuName][] = array($name, $link, $options);
+			$this->_menus[$menuName] = new SimpleMenu();
+		$this->_menus[$menuName]->add($item);
 		return $this;
 	}
+
+	public function getMenu($menuName)
+	{
+		if (!isset($this->_menus[$menuName]))
+			$this->_menus[$menuName] = new SimpleMenu();
+		return $this->_menus[$menuName];
+	}
+}
+
+class SimpleMenu {
+	protected $_items = array();
+
+	protected $_defaultItem = array(
+		'name' => '',
+		'link' => null,
+		'options' => null,
+	);
+
+	public function add($item) {
+		$item = array_merge($this->_defaultItem, $item);
+		$this->_items[] = $item;
+		return $this;
+	}
+
+	public function getItems() {
+		return $this->_items;
+	}
+
 }

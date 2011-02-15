@@ -37,15 +37,13 @@ class MenuHelper extends AppHelper
 	 *
 	 * Add a menu item to a menu
 	 * @param string $menu_name
-	 * @param string $name
-	 * @param array $link
-	 * @param array $options
+	 * @param array $item
 	 * @return MenuHelper to allow chained calls
 	 */
-	public function add($menu_name, $name, $link = null, $options = null) {
-		if (!isset($menu_name))
-			$this->_menus[$menu_name] = array();
-		$this->_menus[$menu_name] = array($name, $link, $options);
+	public function add($menu_name, $item) {
+		if (!isset($this->_menus[$menuName]))
+			$this->_menus[$menuName] = new SimpleMenu();
+		$this->_menus[$menuName]->add($item);
 		return $this;
 	}
 
@@ -62,10 +60,10 @@ class MenuHelper extends AppHelper
 	 * @return string html code of the menu
 	 */
 	public function get($menu_name, $style = 'ul') {
-		if (empty($this->_menus[$menu_name]))
+		if (!isset($this->_menus[$menu_name]))
 		  return null;
 
-		$items = $this->getItems($menu_name);
+		$items = $this->getLinks($menu_name);
 
 		switch ($style) {
 			case 'div':
@@ -98,36 +96,49 @@ class MenuHelper extends AppHelper
 	 * @return string html code of the breadcrumbs
 	 */
 	public function getCrumbs($menu_name = 'breadcrumbs', $separator = ' > ') {
-		if (empty($this->_menus[$menu_name]))
+		if (!isset($this->_menus[$menu_name]))
 			return null;
-		// Change the last link to text only as it is supposed to be the current page
-		$last_item_id = count($this->_menus[$menu_name]) - 1;
-		$this->_menus[$menu_name][$last_item_id] = array($this->_menus[$menu_name][$last_item_id][0]);
 
-		$items = $this->getItems($menu_name);
+		$items = $this->getLinks($menu_name, false);
 
 		return join($separator, $items);
 	}
 
-
 	/**
 	 *
 	 * get the menu items for DIY display of the menu
-	 * @param unknown_type $menu_name
-	 * @return array of the menu's items
+	 * @param string $menu_name
+	 * @param boolean $first_link
+	 * @return array of the menu's links
 	 */
-	public function getItems($menu_name) {
-		$items = array();
-		if (isset($this->_menus[$menu_name]) && is_array($this->_menus[$menu_name])) {
-			foreach ($this->_menus[$menu_name] as $item) {
-				if (empty($item[1]))
-					$items[] = $item[0];
-				else
-					$items[] = $this->Html->link($item[0], $item[1], $item[2]);
+	public function getLinks($menu_name, $last_link = true) {
+		$links = array();
+		if (isset($this->_menus[$menu_name])) {
+			$items = $this->_menus[$menu_name]->getItems();
+			if (!$last_link) { // do not display the last link if the $first_link = true
+				$last_item_id = count($items) - 1;
+				$items[$last_item_id]['link'] = null;
+			}
+
+			foreach ($items as $item) {
+				if (empty($item['link'])) {
+					$links[] = $item['name'];
+				} else {
+					$links[] = $this->Html->link($item['name'], $item['link'], $item['options']);
+				}
 			}
 		}
-		return $items;
+		return $links;
 	}
 
-
+	/**
+	 *
+	 * return true if the menu has items and false otherwise
+	 * @param string $menu_name
+	 * @return boolean false if empty menu true if has items
+	 */
+	public function hasItems($menu_name) {
+		return isset($this->_menus[$menu_name])
+			&& count($this->_menus[$menu_name]->getItems()) > 0;
+	}
 }
