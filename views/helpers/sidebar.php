@@ -1,6 +1,10 @@
 <?
 /**
  *
+ * This sidebar helper was originally made by Iain Mullan copied for improvements:
+ * https://github.com/ebotunes/cakephp-bits/blob/plugins/helpers/sidebar.php
+ *
+ *
  * The Sidebar Helper allows you to specify blocks of content from your view files, and then render them all at once from
  * your layout. Content blocks can be rendered as Cake elements, or 'inline'.
  *
@@ -39,7 +43,7 @@
 class SidebarHelper extends Helper {
 
 	var $name = 'Sidebar';
-	var $helpers = array('Html');
+	var $helpers = array('Html','Menu');
 
 	var $options = array(
 		'sidebar_id' => 'sidebar',
@@ -53,6 +57,7 @@ class SidebarHelper extends Helper {
 
 	var $_defaultBox = array(
 		'element' => '',
+		'menu' => '',
 		'content' => '',
 		'title' => null,
 		'index' => false,
@@ -63,13 +68,43 @@ class SidebarHelper extends Helper {
 
 	var $controller;
 
+	/**
+	 *
+	 * init the menu items by getting the var menus from the view
+	 */
+	function beforeRender() {
+		parent::beforeRender();
+		if (ClassRegistry::isKeySet('view')) {
+			$view = ClassRegistry::getObject('view');
+			$sidebar_boxes = $view->getVar('sidebar_boxes');
+			if (is_array($sidebar_boxes) && 0 < count($sidebar_boxes)) {
+				$this->boxes = $sidebar_boxes;
+				$this->enable();
+			}
+		}
+	}
+
 	function setController(&$controller) {
 		$this->controller = $controller;
 	}
 
 	function enable() { $this->enabled = true; }
 	function disable() { $this->enabled = false; }
-	function enabled() { return $this->enabled; }
+	function enabled() {
+		if (false == $this->enabled) {
+			return false;
+		}
+		// because a menu can be not displayed,
+		// we have to make sure that a non menu box exists or a menu has items
+		foreach ($this->boxes as $box) {
+			if ('' == $box['menu'] || $this->Menu->hasItems($box['menu'])) {
+				return true;
+			}
+		}
+		// there is no valid boxes to display.
+		// the sidebar is disable
+		return false;
+	}
 
 	/**
 	 * Override the default options.
@@ -93,7 +128,7 @@ class SidebarHelper extends Helper {
 	 *
 	 * @param box
 	 */
-    function addBox($box) {
+	function addBox($box) {
 		$this->enable();
 
 		$box = array_merge($this->_defaultBox, $box);
@@ -107,7 +142,7 @@ class SidebarHelper extends Helper {
 		}
 
 		$this->boxes = $elems;
-    }
+	}
 
 	/**
 	 * Remove all sideboxes from the sidebar.
@@ -134,7 +169,7 @@ class SidebarHelper extends Helper {
 	 * @return true if a sidebox buffer is started succesfully, false otherwise (i.e. in case youve already called
 	 * startBox without a corresponding endBox)
 	 */
-    function startBox($box) {
+	function startBox($box) {
 
 		if ($this->_tmpBox != null) {
 			$this->log('Buffered box already started: '.pr($this->_tmpBox, true));
@@ -145,27 +180,27 @@ class SidebarHelper extends Helper {
 		if (!is_array($box)) {
 			$box = array('title' => $box);
 		}
-    	$this->_tmpBox = $box;
-    	ob_start();
+		$this->_tmpBox = $box;
+		ob_start();
 
-    	return true;
-    }
+		return true;
+	}
 
 	/**
 	 * End the sidebox buffer and add the rendered content to the sidebar.
 	 *
 	 * @return false if there is no active buffer to end, true otherwise.
 	 */
-    function endBox() {
+	function endBox() {
 		if ($this->_tmpBox == null) {
 			$this->log('No buffered box to end!');
 			return false;
 		}
-    	$content = ob_get_clean();
-    	$this->_tmpBox['content'] = $content;
-    	$this->addBox($this->_tmpBox);
-    	$this->_tmpBox = null;
-    }
+		$content = ob_get_clean();
+		$this->_tmpBox['content'] = $content;
+		$this->addBox($this->_tmpBox);
+		$this->_tmpBox = null;
+	}
 
 	/**
 	 * Generate the output for all sidebar elements, wrapped in a sidebar div.
@@ -175,7 +210,7 @@ class SidebarHelper extends Helper {
 	 * 	Each sidebox will have a class of $this->options['sidebox_class']
 	 *
 	 */
-    function getSidebar() {
+	function getSidebar() {
 
 		$output = '';
 
@@ -198,6 +233,14 @@ class SidebarHelper extends Helper {
 					$box_output .= $view->renderElement($sb['element'], $sb['params']);
 				}
 
+				if (!empty($sb['menu'])) {
+					// do not show this box if the menu has no items
+					if (!$this->Menu->hasItems($sb['menu'])) {
+						continue;
+					}
+					$box_output .= $this->Menu->get($sb['menu']);
+				}
+
 				// wrap it all in a div
 				$box_output = $this->Html->tag('div', $box_output, array('id' => $sb['element'], 'class' => $this->options['sidebox_class'].' '. $sb['element']));
 
@@ -208,7 +251,7 @@ class SidebarHelper extends Helper {
 		}
 
 		return $this->output($output);
-    }
+	}
 
 }
 

@@ -139,6 +139,6 @@ class MenuHelper extends AppHelper
 	 */
 	public function hasItems($menu_name) {
 		return isset($this->_menus[$menu_name])
-			&& count($this->_menus[$menu_name]->getItems()) > 0;
+			&& 0 < count($this->_menus[$menu_name]->getItems());
 	}
 }
