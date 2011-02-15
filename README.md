@@ -1,17 +1,14 @@
 # SimpleMenu Plugin for CakePHP #
 
+You can contact me for questions, suggestions, advices.
+You can fork it :)
+
 Originally inspired by
  * http://bakery.cakephp.org/articles/rees/2010/08/14/breadcrumbs
  * http://tv.cakephp.org/video/CakeFoundation/2010/12/24/pierre_martin_-_using_and_reusing_plugins_across_cakephp_applications  
+ * https://github.com/ebotunes/cakephp-bits/blob/plugins/helpers/sidebar.php
 
-This plugin make easy the menu creation from controllers and views.
-
-When it makes more sense setting the items of yours menus in the controllers,
-It is not a straight forward thing to do in cakePHP.
-
-This SimpleMenu allow you to do just that and for as many menus as you want.
-
-This plugin works great for Breadcrumbs as well!
+This plugin makes easy the menu, breadcrumb and sidebar management from controllers and views.
 
 
 ## Installation ##
@@ -19,27 +16,29 @@ This plugin works great for Breadcrumbs as well!
 
 in your plugin folder:
 
-git clone git@github.com:geromey/simple_menu.git
+	git clone git@github.com:geromey/simple_menu.git
 
+### Using the menu ###
 
 in app_controller:
+
 	var $components = array(/*...*/ 'SimpleMenu.Menu');
 	var $helpers = array(/*...*/ 'SimpleMenu.Menu');
 
-anywhere in the controllers:
+in controllers:
 
 	function beforeFilter() {
 		parent::beforeFilter();
-		$this->Menu->add('general', __('News',true), array('controller'=>'news','action' =>'index'));
-		$this->Menu->add('general', __('Contact',true), array('controller'=>'pages','action' =>'display','contact'));
-		$this->Menu->add('general', __('Links',true), array('controller'=>'links','action' =>'index'));
+		$this->Menu->add('general', array('name'=>__('News',true), 'link'=>array('controller'=>'news','action' =>'index')));
+		$this->Menu->add('general', array('name'=>__('Contact',true), 'link'=>array('controller'=>'pages','action' =>'display','contact')));
+		$this->Menu->add('general', array('name'=>__('Links',true), 'link'=>array('controller'=>'links','action' =>'index')));
 
-		$this->Menu->add('breadcrumbs',__('Home',true), array('controller'=>'pages','action'=>'display','home'));
+		$this->Menu->add('breadcrumbs', array('name'=>__('Home',true), 'link'=>array('controller'=>'pages','action'=>'display','home')));
 
 		// in the news controller
-		$this->Menu->add('breadcrumbs',__('News',true), array('action'=>'index'));
+		$this->Menu->add('breadcrumbs', array('name'=>__('News',true), 'link'=>array('action'=>'index')));
 
-in views (mostly layouts):
+in views:
 
 	<div id="navbar">
 		<?php echo $this->Menu->get('general', 'ul') ?>
@@ -54,6 +53,20 @@ in views (mostly layouts):
 			<p><?php echo $item ?></p> 
 		<?php endforeach ?>
 	</div>
-	
-	
-	
+
+### Using the sidebar ###
+
+in app_controller:
+
+	var $components = array(/*...*/ 'SimpleMenu.Sidebar');
+	var $helpers = array(/*...*/ 'SimpleMenu.Sidebar');
+
+in controllers:
+
+	$sidebar->addBox(array('title'=>'Some Title','content'=>'blabla bla<br>bla bla'));
+	// add the general menu to the sidebar
+	$sidebar->addBox(array('title'=>'General Menu','menu'=>'general'));
+
+in your layout:
+
+	<?php echo $this->Sidebar->getSidebar() ?>
