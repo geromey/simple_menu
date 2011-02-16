@@ -67,6 +67,6 @@ class SidebarComponent extends Object {
 		}
 
 		$this->_boxes = $elems;
-		return this;
+		return $this;
 	}
 }
